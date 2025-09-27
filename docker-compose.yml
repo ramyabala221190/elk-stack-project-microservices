@@ -1,0 +1,85 @@
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g  # Elasticsearch heap size
+      - bootstrap.memory_lock=true
+      - indices.memory.index_buffer_size=10%
+      - indices.breaker.total.limit=70%
+    ports:
+      - 9200:9200
+    networks:
+      - my-elk
+
+  logstash:
+    image: my-logstash
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    restart: always
+    environment:
+       - LS_JAVA_OPTS=-Xms512m -Xmx512m  # Logstash heap size
+    build:
+      context: .
+      dockerfile: logstash/Dockerfile
+    # volumes:
+    #   - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    #   - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+    ports:
+      - 5000:5000
+      - 5001:5001
+    depends_on:
+      - elasticsearch
+    networks:
+      - my-elk
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.0
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q '\"state\":\"green\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: always
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=false
+      - TELEMETRY_ENABLED=false
+      - XPACK_REPORTING_ENABLED=false
+      - XPACK_GRAPH_ENABLED=false
+    depends_on:
+      elasticsearch:
+        condition: service_healthy  #This ensures Kibana waits until Elasticsearch is fully ready before starting.
+    ports:
+      - 5601:5601
+    networks:
+      - my-elk
+
+networks:
+  my-elk:
+    name: elk-network
+    driver: bridge
+
+volumes:
+  esdata:
