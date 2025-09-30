@@ -1,3 +1,51 @@
+# Logging in Microservices
+
+Challenges of logging in microservices:
+1. distributed in nature: Need to locate in which microservice the issue is occuring.
+2. log correlation
+3. high volume
+4. centralisation and management
+
+What is observability ?
+
+Ability to understand the internal state of the system by examining the outputs.
+This is possible using logs,metrics, alerts and traces.
+
+Popular logging libraries:
+
+1. winston
+2. pino
+3. morgan
+4. bunyan
+5. log4js
+
+Logging Levels:
+
+1. Fatal: Fatal errors can bring the entire app down
+2. Error: error in app  that is fatal only for the current operation but the rest of the app continues to function
+3. Warning:potential issues but app works
+4. info: important details like startup,shutdown
+5. debug: state of the app for debugging
+6. trace: most detailed logging level. It is used to find the specific place where the error has occured.
+
+
+Log formats:
+1. Unstructured: not recommended. eg: common and combined log format
+2. Structured: most recommended. eg: json,xml,key-value pair
+3. semi-strucutured
+
+Best Practices
+
+1. Use log levels effectively
+2. use structured json
+3. use iso-8601 timestamps
+4. standardise context like include eventId, microservice name, file detaild, method name, line no etc
+5. use correlation id and stack traces
+6. be selective for privacy and compliance. do not log sensitive information.
+
+We are using winston + morgan in the microservices project and the gateway project to append the log messages to files. These files are then picked by Filebeat and sent to the ELK stack.
+
+# ELK
 The ELK Stack works by using Beats or Logstash to collect data from various sources, Logstash to process and transform it, Elasticsearch to index and store the data, and Kibana to visualize and analyze it through dashboards and charts. Essentially, data is gathered, sent to Elasticsearch for analysis, and then displayed in Kibana for monitoring and troubleshooting purposes.
 
 So each of the microservices and the gateways have the filebeat to collect the log messages. Filebeat will send the log messages to logstash,
