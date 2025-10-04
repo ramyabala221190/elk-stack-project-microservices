@@ -38,9 +38,6 @@ services:
     build:
       context: .
       dockerfile: logstash/Dockerfile
-    # volumes:
-    #   - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-    #   - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
     ports:
       - 5000:5000
       - 5001:5001

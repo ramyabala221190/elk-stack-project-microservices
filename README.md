@@ -56,9 +56,9 @@ Elastic provides official Docker images for Elasticsearch, Logstash, and Kibana.
 # Running in docker
 
 ```
-docker compose -p elk -f elk/docker-compose.yml build
+docker compose -p elk -f docker-compose.yml build
 
-docker compose -p elk -f elk/docker-compose.yml  up -d --remove-orphans --no-build
+docker compose -p elk -f docker-compose.yml  up -d --remove-orphans --no-build
 
 ```
 
@@ -100,5 +100,22 @@ output {
 ```
 
 Hit localhost:5601 to access the Kibana dashboard.
+
+![Alt text](documentation/image.png)
+
 On the RHS, go to Stack Management ---> Index Management.
+
+![Alt text](documentation/image-1.png)
+
 You can see an index for every microservice
+
+![Alt text](documentation/image-2.png)
+
+Click on discover index
+
+![Alt text](documentation/image-3.png)
+
+You can find the logs for that index
+
+![Alt text](documentation/image-4.png)
+
