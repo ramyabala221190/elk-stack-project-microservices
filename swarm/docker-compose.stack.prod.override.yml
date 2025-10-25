@@ -1,0 +1,14 @@
+services:
+   elasticsearch:
+     networks:
+         - shared-swarm-net-prod
+
+   logstash:
+      networks:
+         - shared-swarm-net-prod
+    
+   kibana:
+     networks:
+         - shared-swarm-net-prod
+
+      

@@ -1,0 +1,21 @@
+services:
+   elasticsearch:
+     networks:
+         - shared-swarm-net-dev
+     ports:
+      - 9200:9200
+
+   logstash:
+      networks:
+         - shared-swarm-net-dev
+   ports:
+      - 5000:5000
+      - 5001:5001
+    
+   kibana:
+     networks:
+         - shared-swarm-net-dev
+     ports:
+      - 4001:5601
+
+      

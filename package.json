@@ -1,0 +1,12 @@
+{
+  "name": "elk",
+  "version": "1.0.0",
+  "description": "Challenges of logging in microservices:\r 1. distributed in nature: Need to locate in which microservice the issue is occuring.\r 2. log correlation\r 3. high volume\r 4. centralisation and management",
+  "main": "index.js",
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "start":"bash scripts/start.sh"
+  },
+  "author": "",
+  "license": "ISC"
+}

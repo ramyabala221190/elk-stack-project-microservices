@@ -27,7 +27,7 @@ services:
       - my-elk
 
   logstash:
-    image: my-logstash
+    image: dockerenthusiast1992/my-logstash:${IMAGE_TAG}
     deploy:
       resources:
         limits:
