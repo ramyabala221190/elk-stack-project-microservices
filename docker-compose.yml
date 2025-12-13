@@ -27,7 +27,7 @@ services:
       - my-elk
 
   logstash:
-    image: dockerenthusiast1992/my-logstash:${IMAGE_TAG}
+    image: ${DOCKERHUB_USER}/${APPNAME}-logstash:${tag}
     deploy:
       resources:
         limits:
@@ -35,9 +35,9 @@ services:
     restart: always
     environment:
        - LS_JAVA_OPTS=-Xms512m -Xmx512m  # Logstash heap size
-    build:
-      context: .
-      dockerfile: logstash/Dockerfile
+    # build:
+    #   context: .
+    #   dockerfile: logstash/Dockerfile     # not required for deployment because image already built
     ports:
       - 5000:5000
       - 5001:5001
