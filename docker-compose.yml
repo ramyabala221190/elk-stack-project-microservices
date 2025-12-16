@@ -27,7 +27,7 @@ services:
       - my-elk
 
   logstash:
-    image: ${DOCKERHUB_USER}/${APPNAME}-logstash:${tag}
+    image: ${DOCKERHUB_USER}/${APPNAME}-logstash:${TAG}
     deploy:
       resources:
         limits:
