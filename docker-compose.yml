@@ -51,7 +51,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 1g
     healthcheck:
       test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q '\"state\":\"green\"'"]
       interval: 10s
