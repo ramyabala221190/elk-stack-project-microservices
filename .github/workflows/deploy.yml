@@ -104,7 +104,7 @@ jobs:
           script: |
                cd /home/${{ env.VM_USER }}/${{vars.APP_NAME}}
                
-               cat <<EOF > /home/${{ env.VM_USER }}/${{vars.APP_NAME}}/.env 
+               cat <<EOF > /home/${{ env.VM_USER }}/${{vars.APP_NAME}}/docker/.env 
                DOCKERHUB_USER=${{ vars.DOCKERHUB_USERNAME }} 
                APPNAME=${{ vars.APP_NAME }}
                TAG=${{ env.TAG }}  
