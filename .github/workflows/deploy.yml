@@ -62,7 +62,7 @@ jobs:
         with:
           push: true  # so that image is pushed to Dockerhub as well
           context: .   # this ensures the paths in the Dockerfile work as expected
-          file: ./nginx/Dockerfile  # this ensures the Dockerfile is located in the correct folder
+          file: ./logstash/Dockerfile  # this ensures the Dockerfile is located in the correct folder
           tags: ${{vars.DOCKERHUB_USERNAME}}/${{vars.APP_NAME}}-logstash:${{env.TAG}}
       
       - name: Build Docker image for nginx
@@ -71,7 +71,7 @@ jobs:
         with:
           push: true  # so that image is pushed to Dockerhub as well
           context: .   # this ensures the paths in the Dockerfile work as expected
-          file: ./logstash/Dockerfile  # this ensures the Dockerfile is located in the correct folder
+          file: ./nginx/Dockerfile  # this ensures the Dockerfile is located in the correct folder
           tags: ${{vars.DOCKERHUB_USERNAME}}/${{vars.APP_NAME}}-nginx:${{env.TAG}}
       
       - name: Copy compose files to VM
