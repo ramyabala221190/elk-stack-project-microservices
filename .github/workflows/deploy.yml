@@ -18,8 +18,9 @@ on:
 
 env:
  TAG: ${{ github.run_id }} 
-#  DOCKERHUB_USER: ${{vars.DOCKERHUB_USERNAME}}
-#  APPNAME: ${{vars.APP_NAME}}
+ VM_IP: ${{secrets.AZURE_VM_DEV_IP}}
+ VM_USER: ${{secrets.AZURE_VM_DEV_USER}}
+ VM_DOMAIN: ${{secrets.AZURE_VM_DEV_DOMAIN}}
 
 jobs:
   deploy:
@@ -49,6 +50,9 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.environment }}" == "prod" ]]; then
           echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+          echo "VM_IP=${{secrets.AZURE_VM_PROD_IP}}" >> $GITHUB_ENV
+          echo "VM_USER=${{secrets.AZURE_VM_PROD_USER}}" >> $GITHUB_ENV
+          echo "VM_DOMAIN=${{secrets.AZURE_VM_PROD_DOMAIN}}" >> $GITHUB_ENV
           fi
 
 
@@ -58,33 +62,71 @@ jobs:
         with:
           push: true  # so that image is pushed to Dockerhub as well
           context: .   # this ensures the paths in the Dockerfile work as expected
-          file: ./logstash/Dockerfile  # this ensures the Dockerfile is located in the correct folder
+          file: ./nginx/Dockerfile  # this ensures the Dockerfile is located in the correct folder
           tags: ${{vars.DOCKERHUB_USERNAME}}/${{vars.APP_NAME}}-logstash:${{env.TAG}}
+      
+      - name: Build Docker image for nginx
+        if: ${{ github.event.inputs.environment == 'dev' }}
+        uses: docker/build-push-action@v5
+        with:
+          push: true  # so that image is pushed to Dockerhub as well
+          context: .   # this ensures the paths in the Dockerfile work as expected
+          file: ./logstash/Dockerfile  # this ensures the Dockerfile is located in the correct folder
+          tags: ${{vars.DOCKERHUB_USERNAME}}/${{vars.APP_NAME}}-nginx:${{env.TAG}}
       
       - name: Copy compose files to VM
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.AZURE_VM_IP }}
-          username: ${{ secrets.AZURE_VM_USER }}
+          host: ${{ env.VM_IP}}
+          username: ${{ env.VM_USER }}
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
-          source: "docker-compose.yml"
-          target: "/home/${{ secrets.AZURE_VM_USER }}/${{vars.APP_NAME}}"
+          source: "docker/**"
+          target: "/home/${{ env.VM_USER }}/${{vars.APP_NAME}}"
+      
+      - name: Copy nginx config files to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.VM_IP }}
+          username: ${{ env.VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          source: "nginx/*.conf"
+          target: "/home/${{ env.VM_USER }}/${{vars.APP_NAME}}/docker"
+          strip_components: 1
+
       
       - name: Deploy to Azure VM
         uses: appleboy/ssh-action@v1.0.3
             # the action requires the parameters specified under with:
         with:
-          host: ${{ secrets.AZURE_VM_IP }}   # asure ip
-          username: ${{ secrets.AZURE_VM_USER }} # aszure username
+          host: ${{ env.VM_IP}}   # asure ip
+          username: ${{ env.VM_USER }} # aszure username
           key: ${{ secrets.AZURE_VM_SSH_KEY }}  # your private key. your public key will be given to azure
           script: |
-               cd /home/${{ secrets.AZURE_VM_USER }}/${{vars.APP_NAME}}
+               cd /home/${{ env.VM_USER }}/${{vars.APP_NAME}}
                
-               cat <<EOF > /home/${{ secrets.AZURE_VM_USER }}/${{vars.APP_NAME}}/.env 
+               cat <<EOF > /home/${{ env.VM_USER }}/${{vars.APP_NAME}}/.env 
                DOCKERHUB_USER=${{ vars.DOCKERHUB_USERNAME }} 
                APPNAME=${{ vars.APP_NAME }}
                TAG=${{ env.TAG }}  
+               TARGETENV=${{ github.event.inputs.environment }}
+               AZURE_VM_DOMAIN=${{env.VM_DOMAIN}}
+               VM_USER=${{env.VM_USER}} 
                EOF
 
-               docker compose -p ${{vars.APP_NAME}}-${{ github.event.inputs.environment }} -f docker-compose.yml pull
-               docker compose -p ${{vars.APP_NAME}}-${{ github.event.inputs.environment }} -f docker-compose.yml up -d --remove-orphans --no-build
+                docker compose \
+               -p ${{vars.APP_NAME}}-${{ github.event.inputs.environment }} \
+               -f docker/docker-compose.yml \
+               -f docker/docker-compose.${{ github.event.inputs.environment }}.override.yml \
+                down || true
+               
+               docker compose \
+               -p ${{vars.APP_NAME}}-${{ github.event.inputs.environment }} \
+               -f docker/docker-compose.yml \
+               -f docker/docker-compose.${{ github.event.inputs.environment }}.override.yml \
+                pull
+               
+               docker compose \
+               -p ${{vars.APP_NAME}}-${{ github.event.inputs.environment }} \
+               -f docker/docker-compose.yml \
+               -f docker/docker-compose.${{ github.event.inputs.environment }}.override.yml \
+               up -d --remove-orphans --no-build

@@ -1,4 +1,18 @@
 services:
+  
+  nginx:
+       image: ${DOCKERHUB_USER}/${APPNAME}-nginx:${TAG}
+       env_file: environments/common.env
+       environment:
+         - stdoutPath=/var/log/${APPNAME}-nginx/combined.log
+         - stderrPath=/var/log/${APPNAME}-nginx/error.log
+         - AZURE_VM_DOMAIN=${AZURE_VM_DOMAIN} # exposed from github actions but must be declared here to access in conf file
+       restart: always
+       volumes:
+         - /home/${VM_USER}/${APPNAME}/docker/nginx.${TARGETENV}.conf:/etc/nginx/templates/default.conf.template
+       networks:
+         - my-elk
+    
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
@@ -21,8 +35,8 @@ services:
       - bootstrap.memory_lock=true
       - indices.memory.index_buffer_size=10%
       - indices.breaker.total.limit=70%
-    ports:
-      - 9200:9200
+    expose:
+      - 9200
     networks:
       - my-elk
 
@@ -38,9 +52,9 @@ services:
     # build:
     #   context: .
     #   dockerfile: logstash/Dockerfile     # not required for deployment because image already built
-    ports:
-      - 5000:5000
-      - 5001:5001
+    expose:
+      - 5000
+      - 5001
     depends_on:
       - elasticsearch
     networks:
