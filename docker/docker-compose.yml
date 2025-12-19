@@ -16,6 +16,10 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    ulimits: 
+      memlock: 
+       soft: -1 
+       hard: -1
     volumes:
       - esdata:/usr/share/elasticsearch/data
     deploy:
@@ -24,11 +28,12 @@ services:
           memory: 2g
     restart: always
     healthcheck:
+      # for single node clusters skip the health check
       # test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"yellow\"'"]
-      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+       test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
+       interval: 10s
+       timeout: 5s
+       retries: 10
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
