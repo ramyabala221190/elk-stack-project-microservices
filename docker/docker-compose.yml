@@ -1,7 +1,7 @@
 services:
   
   nginx:
-       image: ${DOCKERHUB_USER}/${APPNAME}-nginx:${TAG}
+       image: nginx:alpine
        env_file: environments/common.env
        environment:
          - stdoutPath=/var/log/${APPNAME}-nginx/combined.log
