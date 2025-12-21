@@ -1,3 +1,9 @@
+We have used nginx as a reverse proxy through which we access the kibana dashboard.
+The ports of kibana, elastic search and logstash have not been exposed. Hence we have avoided
+usage of ports: and used expose: instead.
+Only nginx is exposed to the internet.
+
+
 # Logging in Microservices
 
 Challenges of logging in microservices:
