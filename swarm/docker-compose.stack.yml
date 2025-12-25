@@ -13,7 +13,7 @@ services:
          - stderrPath=/var/log/${APPNAME}-nginx/error.log
          - AZURE_VM_DOMAIN=${AZURE_VM_DOMAIN} # exposed from github actions but must be declared here to access in conf file
        volumes:
-         - /home/${VM_USER}/${APPNAME}/docker/nginx.${TARGETENV}.conf:/etc/nginx/templates/default.conf.template
+         - /home/${VM_USER}/${APPNAME}/nginx/nginx.${TARGETENV}.conf:/etc/nginx/templates/default.conf.template
     
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
