@@ -1,21 +1,23 @@
 services:
+
+   nginx:
+     environment:
+      - NGINX_PORT=8600
+     ports: 
+         - 8600:8600
+     networks:
+         - shared-swarm-net-dev
+
    elasticsearch:
      networks:
          - shared-swarm-net-dev
-     ports:
-      - 9200:9200
 
    logstash:
       networks:
          - shared-swarm-net-dev
-   ports:
-      - 5000:5000
-      - 5001:5001
     
    kibana:
      networks:
          - shared-swarm-net-dev
-     ports:
-      - 4001:5601
 
       

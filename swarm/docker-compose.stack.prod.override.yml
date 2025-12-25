@@ -1,4 +1,12 @@
 services:
+   nginx:
+     environment:
+      - NGINX_PORT=8700
+     ports: 
+        - 8700:8700
+     networks:
+         - shared-swarm-net-prod
+
    elasticsearch:
      networks:
          - shared-swarm-net-prod
