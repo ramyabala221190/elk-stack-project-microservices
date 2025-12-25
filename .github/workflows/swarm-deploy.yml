@@ -96,8 +96,8 @@ jobs:
           script: |
                cd /home/${{ env.VM_USER }}/${{vars.APP_NAME}}/
 
-               envsubst < /home/${VM_USER}/${APPNAME}/nginx/nginx.${TARGETENV}.conf \
-               > /home/${VM_USER}/${APPNAME}/nginx/nginx.resolved.conf
+               envsubst < /home/${{env.VM_USER}}/${{ vars.APP_NAME }}/nginx/nginx.${{ github.event.inputs.environment }}.conf \
+               > /home/${{env.VM_USER}}/${{ vars.APP_NAME }}/nginx/nginx.resolved.conf
 
                
                docker stack rm ${{ vars.APP_NAME }}-${{ github.event.inputs.environment }}
