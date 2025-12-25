@@ -126,3 +126,96 @@ You can find the logs for that index
 ![Alt text](documentation/image-4.png)
 
 Check how github actions works from other README.md of other microservices repo
+
+## Swarm Configs
+
+**You should use Docker Swarm configs whenever you need to distribute non‑sensitive configuration files (like Nginx templates, app configs, YAMLs) across nodes, instead of relying on bind mounts. They are best used when the same config must be available consistently on all nodes, and they are injected into containers at runtime.**
+
+---
+
+## 🔎 What Docker Swarm Configs Are
+- **Configs** are objects managed by Swarm that store text files (JSON, YAML, conf, etc.).  
+- They are similar to **secrets**, but intended for non‑sensitive data.  
+- Swarm automatically distributes configs to the nodes running your service.  
+- Inside the container, configs appear as files at the path you specify.
+
+---
+
+## ✅ When to Use Configs
+- **Nginx/HAProxy templates**: Instead of bind mounting `/home/.../nginx.conf`, store it as a config.  
+- **Application configs**: JSON/YAML files that define service behavior.  
+- **Cluster‑wide configs**: Anything that must be identical across nodes.  
+- **Avoiding invalid mounts**: When bind mounts fail because files don’t exist on worker nodes.  
+
+Configs are **not for sensitive data** (use secrets for certs, private keys, passwords).
+
+---
+
+## 🛠️ How to Use Configs
+1. **Define configs in your stack file**
+   ```yaml
+   version: "3.8"
+
+   configs:
+     nginx_conf:
+       file: ./nginx/nginx.prod.conf
+
+   services:
+     nginx:
+       image: nginx:alpine
+       configs:
+         - source: nginx_conf
+           target: /etc/nginx/templates/default.conf.template
+   ```
+
+Key points:
+file: points to the config file on the manager node at deploy time.
+
+Swarm stores it in the Raft database and distributes it to the node running the service.
+
+Inside the container, it appears at /etc/nginx/templates/default.conf.template.
+
+It’s read‑only by default.
+
+2. **Deploy the stack**
+   ```bash
+   docker stack deploy -c docker-compose.yml mystack
+   ```
+
+3. **Inspect configs**
+   ```bash
+   docker config ls
+   docker config inspect nginx_conf
+   ```
+
+4. **Inside the container**
+   - The config file will appear at `/etc/nginx/templates/default.conf.template`.  
+   - It is **read‑only** by default.
+
+---
+
+## ⚖️ Benefits vs Bind Mounts
+
+| **Aspect**            | **Bind Mounts**                          | **Configs**                                |
+|------------------------|------------------------------------------|--------------------------------------------|
+| Node dependency        | File must exist on every node            | Swarm distributes automatically            |
+| Portability            | Brittle (path must match)                | Portable across nodes                      |
+| Security               | Can expose sensitive files accidentally  | Intended for non‑sensitive configs         |
+| Mutability             | Can be changed on host                   | Immutable once deployed (update via redeploy) |
+| Best use case          | Local dev, one‑node setups               | Production, multi‑node Swarm clusters      |
+
+---
+
+## ⚠️ Risks & Trade‑offs
+- **Immutable**: You can’t edit configs in place; you must create a new config and redeploy.  
+- **Not for secrets**: Don’t store certs/keys here — use `docker secret`.  
+- **Read‑only**: Apps can’t modify configs at runtime.  
+
+
+
+Since nginx is acting as reverse proxy, it will receive all client requests.
+The stack compose files and nginx config files are copied to the manager node to deploy the stack.
+
+When the worker node tries to run the container, it requires these nginx config files as well.
+So a better approach would be to use swarm configs to distribute such data that multiple
+ nodes require, instead of copying the nginx config files to every node that requires it.

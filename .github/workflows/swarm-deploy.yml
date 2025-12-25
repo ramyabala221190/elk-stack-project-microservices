@@ -95,6 +95,10 @@ jobs:
           key: ${{ secrets.AZURE_VM_SSH_KEY }}  # your private key. your public key will be given to azure
           script: |
                cd /home/${{ env.VM_USER }}/${{vars.APP_NAME}}/
+
+               envsubst < /home/${VM_USER}/${APPNAME}/nginx/nginx.${TARGETENV}.conf \
+               > /home/${VM_USER}/${APPNAME}/nginx/nginx.resolved.conf
+
                
                docker stack rm ${{ vars.APP_NAME }}-${{ github.event.inputs.environment }}
                
