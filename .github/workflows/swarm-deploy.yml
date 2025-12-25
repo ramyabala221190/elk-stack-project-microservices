@@ -1,4 +1,4 @@
-name: Deploy ELK stack
+name: Deploy ELK stack to Swarm
 
 on: 
  workflow_dispatch:
