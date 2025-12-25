@@ -1,8 +1,10 @@
-services:
-  
-  configs:
+
+configs:
      nginx_conf:
        file: /home/${VM_USER}/${APPNAME}/nginx/nginx.resolved.conf
+
+services:
+
 
   nginx:
        image: nginx:alpine
