@@ -5,6 +5,12 @@ configs:
      nginx_conf_prod:
        file: /home/${VM_USER}/${APPNAME}/nginx/nginx.prod.conf
 
+secrets:
+     ssl_cert:
+       file: /etc/letsencrypt/live/${AZURE_VM_DOMAIN}/fullchain.pem
+     ssl_key:
+       file: /etc/letsencrypt/live/${AZURE_VM_DOMAIN}/privkey.pem
+
 services:
 
 

@@ -211,6 +211,73 @@ It’s read‑only by default.
 - **Not for secrets**: Don’t store certs/keys here — use `docker secret`.  
 - **Read‑only**: Apps can’t modify configs at runtime.  
 
+Great question — SSL/TLS certificates are a special case in Docker Swarm, and the choice between **configs** and **secrets** matters a lot.
+
+---
+
+## 🔎 Difference Between Swarm Configs and Secrets
+- **Configs**:  
+  - Designed for non‑sensitive data (templates, config files).  
+  - Stored in Swarm’s Raft database in **plaintext**.  
+  - Distributed to nodes as regular files, readable by any container that mounts them.  
+- **Secrets**:  
+  - Designed for sensitive data (passwords, private keys, certificates).  
+  - Stored encrypted in the Raft database.  
+  - Only delivered to containers that explicitly request them.  
+  - Mounted in memory‑backed filesystems (`/run/secrets/...`), not persisted to disk.
+
+---
+
+## ✅ Best Practice for SSL Certificates
+- **Private keys** (e.g. `server.key`) → **must be stored as Swarm secrets**.  
+  - They are sensitive and must be encrypted at rest.  
+- **Public certificates** (e.g. `server.crt`, intermediate CA chain) → can be stored as **configs** or **secrets**, depending on your security posture.  
+  - Many teams still store them as secrets for consistency, even though they’re not confidential.  
+
+---
+
+## ⚠️ Why Not Use Configs for Keys
+If you put private keys in configs:
+- They’re stored unencrypted in the Raft database.  
+- Any container with access to configs can read them.  
+- This violates security best practices and may fail compliance checks.
+
+---
+
+## 🚀 Recommended Pattern
+For Nginx reverse proxy in Swarm:
+```yaml
+secrets:
+  ssl_cert:
+    file: ./certs/server.crt
+  ssl_key:
+    file: ./certs/server.key
+
+services:
+  nginx:
+    secrets:
+      - source: ssl_cert
+        target: /etc/nginx/certs/server.crt
+      - source: ssl_key
+        target: /etc/nginx/certs/server.key
+```
+
+Then in your Nginx config:
+```nginx
+server {
+    listen 443 ssl;
+    ssl_certificate     /etc/nginx/certs/server.crt;
+    ssl_certificate_key /etc/nginx/certs/server.key;
+    ...
+}
+```
+
+---
+
+👉 In short: **store SSL private keys in Swarm secrets, not configs.** Certificates can go in configs, but most teams keep them in secrets too for consistency and security.  
+
+Would you like me to sketch a **secure Swarm secrets workflow** for managing SSL certs across dev/prod environments, so you don’t have to manually copy them into each node?
+
 
 
 Since nginx is acting as reverse proxy, it will receive all client requests.
@@ -219,6 +286,8 @@ The stack compose files and nginx config files are copied to the manager node to
 When the worker node tries to run the container, it requires these nginx config files as well.
 So a better approach would be to use swarm configs to distribute such data that multiple
  nodes require, instead of copying the nginx config files to every node that requires it.
+
+
 
 
 ### How does DNS work ?
