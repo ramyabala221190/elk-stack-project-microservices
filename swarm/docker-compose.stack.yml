@@ -1,6 +1,6 @@
 
 configs:
-     nginx_conf:
+     nginx_conf_${TARGETENV}:
        file: /home/${VM_USER}/${APPNAME}/nginx/nginx.${TARGETENV}.conf
 
 services:
@@ -19,7 +19,7 @@ services:
          - stderrPath=/var/log/${APPNAME}-nginx/error.log
          - AZURE_VM_DOMAIN=${AZURE_VM_DOMAIN} # exposed from github actions but must be declared here to access in conf file
        configs: 
-         - source: nginx_conf 
+         - source: nginx_conf_${TARGETENV}
            target: /etc/nginx/templates/default.conf.template
     
   elasticsearch:

@@ -219,3 +219,72 @@ The stack compose files and nginx config files are copied to the manager node to
 When the worker node tries to run the container, it requires these nginx config files as well.
 So a better approach would be to use swarm configs to distribute such data that multiple
  nodes require, instead of copying the nginx config files to every node that requires it.
+
+
+### How does DNS work ?
+
+## 🔎 How It Works
+- **Azure DNS**: You’ve configured DNS records for all nodes (manager + workers). Each node has a public DNS name that resolves to its IP.
+- **Swarm routing mesh**: When you publish a port in a Swarm service (`listen 8600;` in your Nginx config), Swarm automatically sets up a routing mesh. That means any node in the cluster (manager or worker) will accept traffic on that published port and forward it internally to the node where the service task is actually running.
+- **Result**: Even though Nginx is running on a worker node, if you hit the manager node’s DNS on the published port, Swarm forwards the request to the worker node where Nginx is active.
+
+---
+
+## ✅ Practical Example
+Suppose:
+- Worker node DNS: `worker1.cloudapp.azure.com`
+- Manager node DNS: `manager.cloudapp.azure.com`
+- Nginx service published on port `8600`.
+
+You can reach Kibana through either:
+```
+http://worker1.cloudapp.azure.com:8600/
+http://manager.cloudapp.azure.com:8600/
+```
+
+Both will work, because Swarm’s routing mesh forwards traffic from the manager node to the worker node where Nginx is running.
+
+
+👉 So yes, with Swarm’s default routing mesh, you can access the reverse proxy via the manager node’s DNS even though the container is running on a worker.  
+
+Would you like me to show you how to configure `server_name` in Nginx to accept **both manager and worker DNS names** so it works seamlessly regardless of which entry point clients use?
+
+Exactly — that’s the safer and simpler approach in most Swarm deployments.
+
+---
+
+## 🔎 Why
+- **Swarm routing mesh**: When you publish a port in a Swarm service, Docker automatically sets up a routing mesh. Any node in the cluster (manager or worker) will accept traffic on that published port and forward it internally to the node where the service task is running.
+- **Firewall exposure**: If you open inbound ports on every worker, you’re increasing the attack surface unnecessarily. Since the routing mesh already forwards traffic, you only need to expose the port on one entry point.
+- **Best practice in cloud setups**: In Azure, it’s common to expose only the manager node (or a load balancer fronting the cluster) to the internet. Workers stay behind the scenes, reachable only through the overlay network.
+
+---
+
+## ✅ Recommended Pattern
+- **Open inbound firewall ports only on the manager node (or load balancer)**.  
+- **Keep worker nodes closed to direct inbound traffic** — they’ll still receive traffic internally via Swarm’s routing mesh.  
+- **Set `server_name` in Nginx to the external DNS that clients use** (manager DNS or load balancer DNS).  
+
+---
+
+## ⚠️ Exceptions
+- If you disable the routing mesh (`mode: host` or direct node port publishing), then you must open the firewall on the specific worker node(s) where the service runs.  
+- If you use an Azure Load Balancer, you should open ports only on the load balancer and let it distribute traffic to nodes.
+
+---
+
+👉 In short: **yes, it’s better to expose inbound ports only on the manager node (or load balancer) and keep worker nodes closed.** That way, you minimize exposure while still allowing Kibana access through Nginx.  
+
+Would you like me to sketch a **secure Azure NSG (firewall) rule set** that matches this pattern, so you can apply it directly to your cluster?
+
+So although nginx reverse proxy for elk is running in a worker node, the manager node can also
+recieve requests and forward it to the worker node.
+This is also the best practice.
+
+For example in dev, nginx listens on port 8600.
+So instead opening the firewall port on worker node, open it on manager node. Opening firewall
+port is necessary for both worker and manager nodes to open the kibana dashboard in the browser.
+Set the server_name to the manager node DNS name.
+
+This ensures all client requests are received only by the manager node and forwarded to the
+worker node running the nginx container for elk.
