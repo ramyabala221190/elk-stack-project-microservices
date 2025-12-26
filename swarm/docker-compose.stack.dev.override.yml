@@ -3,6 +3,9 @@ services:
    nginx:
      environment:
       - NGINX_PORT=8600
+     configs: 
+         - source: nginx_conf_dev
+           target: /etc/nginx/templates/default.conf.template
      ports: 
          - 8600:8600
      networks:

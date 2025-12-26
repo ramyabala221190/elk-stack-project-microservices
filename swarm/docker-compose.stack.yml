@@ -1,7 +1,9 @@
 
 configs:
-     nginx_conf_${TARGETENV}:
-       file: /home/${VM_USER}/${APPNAME}/nginx/nginx.${TARGETENV}.conf
+     nginx_conf_dev:
+       file: /home/${VM_USER}/${APPNAME}/nginx/nginx.dev.conf
+     nginx_conf_prod:
+       file: /home/${VM_USER}/${APPNAME}/nginx/nginx.prod.conf
 
 services:
 
@@ -18,9 +20,6 @@ services:
          - stdoutPath=/var/log/${APPNAME}-nginx/combined.log
          - stderrPath=/var/log/${APPNAME}-nginx/error.log
          - AZURE_VM_DOMAIN=${AZURE_VM_DOMAIN} # exposed from github actions but must be declared here to access in conf file
-       configs: 
-         - source: nginx_conf_${TARGETENV}
-           target: /etc/nginx/templates/default.conf.template
     
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0

@@ -2,6 +2,9 @@ services:
    nginx:
      environment:
       - NGINX_PORT=8700
+     configs: 
+         - source: nginx_conf_prod
+           target: /etc/nginx/templates/default.conf.template
      ports: 
         - 8700:8700
      networks:
