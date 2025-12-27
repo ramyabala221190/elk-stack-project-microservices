@@ -14,11 +14,11 @@ services:
             condition: on-failure
          placement:
           constraints: [node.labels.role == worker3]
-       command: ["/bin/sh", "-c", "envsubst '$$KIBANA_PORT $$AZURE_VM_DOMAIN $$NGINX_PORT $$stdoutPath $$stderrPath' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"]
+       command: ["/bin/sh", "-c", "envsubst '$$KIBANA_PORT $$AZURE_VM_DOMAIN $$NGINX_PORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"]
        environment:
          - KIBANA_PORT=5601
-         - stdoutPath=/var/log/${APPNAME}-nginx/combined.log
-         - stderrPath=/var/log/${APPNAME}-nginx/error.log
+        #  - stdoutPath=/var/log/${APPNAME}-nginx/combined.log
+        #  - stderrPath=/var/log/${APPNAME}-nginx/error.log
          - AZURE_VM_DOMAIN=${AZURE_VM_DOMAIN} # exposed from github actions but must be declared here to access in conf file
     
   elasticsearch:
