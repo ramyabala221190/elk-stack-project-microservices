@@ -7,9 +7,9 @@ configs:
 
 secrets:
      ssl_cert:
-       file: /etc/letsencrypt/live/${AZURE_VM_DOMAIN}/fullchain.pem
+       file: /home/${VM_USER}/${APPNAME}/certs/fullchain.pem
      ssl_key:
-       file: /etc/letsencrypt/live/${AZURE_VM_DOMAIN}/privkey.pem
+       file: /home/${VM_USER}/${APPNAME}/certs/privkey.pem
 
 services:
 

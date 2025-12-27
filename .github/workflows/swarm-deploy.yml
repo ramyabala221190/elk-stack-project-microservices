@@ -96,6 +96,10 @@ jobs:
           script: |
                cd /home/${{ env.VM_USER }}/${{vars.APP_NAME}}/
 
+               sudo cp /etc/letsencrypt/live/${AZURE_VM_DOMAIN}/fullchain.pem  /home/${{ env.VM_USER }}/${{vars.APP_NAME}}/certs/
+               sudo cp /etc/letsencrypt/live/${AZURE_VM_DOMAIN}/privkey.pem  /home/${{ env.VM_USER }}/${{vars.APP_NAME}}/certs/
+               sudo chmod 644 /home/${{ env.VM_USER }}/${{vars.APP_NAME}}/certs/*.pem
+
                docker stack rm ${{ vars.APP_NAME }}-${{ github.event.inputs.environment }}
                
                DOCKERHUB_USER=${{ vars.DOCKERHUB_USERNAME }} \
