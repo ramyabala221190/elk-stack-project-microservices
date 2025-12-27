@@ -1,3 +1,10 @@
+secrets:
+     ssl_cert:
+       file: /home/${VM_USER}/${APPNAME}/certs/fullchain.pem
+     ssl_key:
+       file: /home/${VM_USER}/${APPNAME}/certs/privkey.pem
+
+
 services:
    nginx:
      environment:

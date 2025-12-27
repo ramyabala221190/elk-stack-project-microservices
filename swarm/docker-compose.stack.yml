@@ -5,12 +5,6 @@ configs:
      nginx_conf_prod:
        file: /home/${VM_USER}/${APPNAME}/nginx/nginx.prod.conf
 
-secrets:
-     ssl_cert:
-       file: /home/${VM_USER}/${APPNAME}/certs/fullchain.pem
-     ssl_key:
-       file: /home/${VM_USER}/${APPNAME}/certs/privkey.pem
-
 services:
 
 
