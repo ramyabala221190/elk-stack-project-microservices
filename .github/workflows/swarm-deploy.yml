@@ -101,16 +101,10 @@ jobs:
                  TARGET_DIR="/home/${{ env.VM_USER }}/${{vars.APP_NAME}}/certs" 
                  # Create the directory if it doesn't exist 
                  sudo mkdir -p "$TARGET_DIR" 
-                 if [ -f "/etc/letsencrypt/live/${{ env.VM_DOMAIN }}/fullchain.pem" ] && \ 
-                 [ -f "/etc/letsencrypt/live/${{ env.VM_DOMAIN }}/privkey.pem" ]; then
-                   echo "Copying SSL certs for prod..."
-                   # Now copy the certs
-                   sudo cp "/etc/letsencrypt/live/${{env.VM_DOMAIN}}/fullchain.pem" "$TARGET_DIR/fullchain.pem"
-                   sudo cp "/etc/letsencrypt/live/${{env.VM_DOMAIN}}/privkey.pem" "$TARGET_DIR/privkey.pem"
-                   sudo chmod 644 "$TARGET_DIR"/*.pem
-                 else 
-                   echo "SSL certs not found, skipping copy." 
-                 fi 
+                 # Now copy the certs
+                 sudo cp "/etc/letsencrypt/live/${{env.VM_DOMAIN}}/fullchain.pem" "$TARGET_DIR/fullchain.pem"
+                 sudo cp "/etc/letsencrypt/live/${{env.VM_DOMAIN}}/privkey.pem" "$TARGET_DIR/privkey.pem"
+                 sudo chmod 644 "$TARGET_DIR"/*.pem
                else 
                  echo "Non-prod environment, skipping SSL cert copy." 
                fi
