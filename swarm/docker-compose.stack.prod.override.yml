@@ -7,9 +7,9 @@ services:
            target: /etc/nginx/templates/default.conf.template
      secrets:
       - source: ssl_cert
-        target: /etc/nginx/ssl/live/${AZURE_VM_DOMAIN}/fullchain.pem
+        target: fullchain.pem
       - source: ssl_key
-        target: /etc/nginx/ssl/live/${AZURE_VM_DOMAIN}/privkey.pem
+        target: privkey.pem
      ports: 
         - 8700:8700
      networks:
