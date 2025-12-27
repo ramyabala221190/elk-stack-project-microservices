@@ -55,9 +55,6 @@ services:
     restart: always
     environment:
        - LS_JAVA_OPTS=-Xms512m -Xmx512m  # Logstash heap size
-    # build:
-    #   context: .
-    #   dockerfile: logstash/Dockerfile     # not required for deployment because image already built
     expose:
       - 5000
       - 5001
