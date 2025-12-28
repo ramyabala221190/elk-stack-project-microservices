@@ -1,3 +1,7 @@
+We cannot run this project locally. Dont use docker desktop to run it because it has high memory
+requirments. Use a remote server with sufficient memory to run this project.
+
+# General deployment strategy
 We have used nginx as a reverse proxy through which we access the kibana dashboard.
 
 For the compose files within docker, the kibana, elastic search and logstash have not been exposed to the internet. Hence we have avoided usage of ports: and used expose: instead for these services
@@ -322,6 +326,37 @@ the commands for inspecting the configs created from the manager node.
    - The config file will appear at `/etc/nginx/templates/default.conf.template`. The content will
    change based on the environment i.e the stack name  
    - It is **read‑only** by default.
+
+## Using environment variables within the swarm configs
+
+I have used many environment variables within the nginx.dev.conf and nginx.prod.conf.
+They will not get automatically substituted as it always happens when i use volumes.
+
+That is the reason we have added an additional command: in the nginx service in docker-compose.stack.yml
+
+```
+       command: ["/bin/sh", "-c", "envsubst '$$KIBANA_PORT $$AZURE_VM_DOMAIN $$NGINX_PORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"]
+
+```
+
+It uses envsubst to substitute the env variables in /etc/nginx/templates/default.conf.template in the 
+nginx container in worker3 node and then output it to the /etc/nginx/conf.d/default.conf.
+After the nginx container is manually startede using nginx -g 'daemon off;'.
+
+What was happening automatically by nginx, now needs to be done manually because of use of environment
+variables within the swarm configs files.
+
+The $$ (double dollar sign) is used in a Docker Compose command: to escape the variable for Docker Compose's interpolation mechanism and pass a literal $ to the container's shell, where the envsubst command can then process it. 
+
+Docker Compose Variable Interpolation: Docker Compose processes the docker-compose.stack.yml file and performs its own variable substitution using the $ syntax (e.g., ${VARIABLE} or $VARIABLE). It looks for these variables in the host environment or a .env file.
+
+Preventing Early Substitution: If you use a single $ in your command or environment field within the Compose file (e.g., command: "envsubst $VAR"), Docker Compose will try to substitute $VAR before the container is even created. If VAR isn't set on the host, it defaults to an empty string, and the container receives envsubst with no variable to substitute.
+
+Passing the Literal $: By using $$ in the Compose file (e.g., command: "envsubst $$VAR"), you are telling Docker Compose to treat the double dollar signs as a single, literal dollar sign character ($). Docker Compose will not interpolate this value, but instead passes the literal string envsubst $VAR into the container's shell.
+
+envsubst within the Container: Once inside the container, the shell executes the envsubst command, which then correctly interprets $VAR as an environment variable that needs to be substituted with the value available within the container's environment (which might be different from the host's, or set via the environment: section in the Compose file). 
+In essence, $$ is an escape sequence that defers the variable substitution from the Docker Compose host process to the shell process running inside the container. 
+
 
 
 ## ⚖️ Benefits vs Bind Mounts
