@@ -523,3 +523,40 @@ This is also the best practice.
 
 This ensures all client requests are received only by the manager node and forwarded to the
 worker node running the nginx container for elk.
+
+# Meaning of the environment variables and secrets from Github
+
+These are set in the Repo settings ---> Secrets and Variables ---> Actions
+
+Below are the secrets:
+
+AZURE_SWARM_MANAGER_IP:  Used only in swarm-build-deploy.yml for swarm setup. This is the public IP
+of the VM which functions as the manager node in swarm cluster.
+
+AZURE_SWARM_MANAGER_USER:Used only in swarm-build-deploy.yml for swarm setup. This is the username
+of the VM which functions as the manager node in swarm cluster.
+
+The above 2 are required when we need to deploy the compose stack files, env files of the product
+microsvcs into a folder: elk in the VM.
+
+AZURE_VM_SSH_KEY: Contains the private key. Public key provided to azure.
+DOCKERHUB_PASSWORD: Contains the password for Dockerhub account
+
+Below are used for non-swarm deployment scenario in the build-deploy.yml.
+Since we used 2 Azure VM's : one for dev and other for prod environment, we have DNS name, public IP
+and username for the 2 VM's. The names below are self explanatory. We will ssh into the particular
+VM based on the environment to deploy the compose and env files into a particular folder and 
+then execute "docker compose up" to run the containers.
+
+AZURE_VM_DEV_DOMAIN
+AZURE_VM_DEV_IP
+AZURE_VM_DEV_USER
+AZURE_VM_PROD_DOMAIN
+AZURE_VM_PROD_IP
+AZURE_VM_PROD_USER
+
+Below are the variables:
+
+APP_NAME: It is the name assigned to application deployed to Azure VM
+DOCKERHUB_USERNAME: This is the dockerhub login username
+
